@@ -1,0 +1,6 @@
+@WorkayCalendarApi_HostAddress = http://localhost:5095
+
+GET {{WorkayCalendarApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
