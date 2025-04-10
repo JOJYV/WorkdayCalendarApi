@@ -18,30 +18,29 @@ namespace WorkayCalendarApi.Services.Implementations
             DateTime workStartDate = RoundToMinute(startDate);
             double remainingDays = workingDays;
             double workdayHours = (workEndTime - workStartTime).TotalHours;
-            var holidays = await GetAllHolidays();// To Check ,If Caching can be used depending on the Size of Holidays
+            var holidays = await GetAllHolidays();// To Check ,If Caching can be used depending on the Size of Holidays      
 
             while (Math.Abs(remainingDays) > 1e-6) // avoid floating point precision issues
             {
                 if (IsWorkingDay(workStartDate, holidays))
                 {
-                    if (workStartDate.TimeOfDay < workStartTime)
+                    if (workStartDate.TimeOfDay < workStartTime) //If time is before working hours, start at workStartTime.
                         workStartDate = workStartDate.Date + workStartTime;
                     else if (workStartDate.TimeOfDay > workEndTime)//
-                        workStartDate = remainingDays > 0
+                        workStartDate = remainingDays > 0//If time is after working hours, move to next or previous working day, based on the direction(positive or negative remainingDays).
                             ? workStartDate.Date.AddDays(1) + workStartTime
                             : workStartDate.Date.AddDays(-1) + workEndTime;
-
                     double remainingHours = remainingDays * workdayHours;
 
-                    if (remainingHours > 0)
+                    if (remainingHours > 0) //Moving Forward in Time(Remaining Days > 0)
                     {
-                        double hoursToEndOfDay = (workEndTime - workStartDate.TimeOfDay).TotalHours;
-                        if (remainingHours <= hoursToEndOfDay)
+                        double hoursToEndOfDay = (workEndTime - workStartDate.TimeOfDay).TotalHours;// Calculates how many working hours are left today.
+                        if (remainingHours <= hoursToEndOfDay) //Enough time left today → Just add and finish.
                         {
                             workStartDate = RoundToMinute(workStartDate.AddHours(remainingHours));
                             remainingDays = 0;
                         }
-                        else
+                        else//Not enough → use today's hours, then move to next working day and deduct fraction used.
                         {
                             workStartDate = RoundToMinute(workStartDate.Date.AddDays(1) + workStartTime);
                             remainingDays -= hoursToEndOfDay / workdayHours;
@@ -91,6 +90,7 @@ namespace WorkayCalendarApi.Services.Implementations
             int pageNumber = 1;
             int pageSize = 1000;
             int totalCount;
+
 
             do
             {

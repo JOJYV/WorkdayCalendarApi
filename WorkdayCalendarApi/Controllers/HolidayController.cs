@@ -102,6 +102,11 @@ namespace WorkdayCalendarApi.Controllers
                 await _holidayService.DeleteHoliday(id);
                 return NoContent();
             }
+
+            catch (ApplicationException) 
+            {
+                return BadRequest("Invalid Id.");
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while deleting the holiday.");
